@@ -8,11 +8,14 @@ import { clerkMiddleware } from "@clerk/express";
 import { clerkClient, requireAuth, getAuth } from "@clerk/express";
 import cors from "cors";
 import ImageKit from "imagekit";
+import dotenv from "dotenv";
 
 const app = express();
 const port = 3000;
 app.use(clerkMiddleware());
 app.use(cors());
+
+dotenv.config();
 
 app.use(cors(process.env.CLIENT_URL));
 
