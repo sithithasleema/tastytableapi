@@ -4,8 +4,16 @@ import { getAuth } from "@clerk/express";
 import slugify from "slugify";
 import ImageKit from "imagekit";
 
+// Helper function to get ImageKit instance
+const getImageKitInstance = () => {
+  return new ImageKit({
+    urlEndpoint: process.env.IK_URL_ENDPOINT,
+    publicKey: process.env.IK_PUBLIC_KEY,
+    privateKey: process.env.IK_PRIVATE_KEY,
+  });
+};
+
 export const getPosts = async (req, res) => {
-  console.log("hello");
   const page = parseInt(req.query.page) || 1;
   const limit = parseInt(req.query.limit) || 5;
 
@@ -196,22 +204,23 @@ export const deletePost = async (req, res) => {
   }
 };
 
-// Uploading to Imagekit
-const imagekit = new ImageKit({
-  urlEndpoint: process.env.IK_URL_ENDPOINT,
-  publicKey: process.env.IK_PUBLIC_KEY,
-  privateKey: process.env.IK_PRIVATE_KEY,
-});
-
 // Imagekit Auth for Uploading file to Clerk Media Library
 export const uploadAuth = async (req, res) => {
-  const { token, expire, signature } = imagekit.getAuthenticationParameters();
-  res.send({
-    token,
-    expire,
-    signature,
-    publicKey: process.env.IK_PUBLIC_KEY,
-  });
+  try {
+    // Initialize ImageKit here when needed
+    const imagekit = getImageKitInstance();
+
+    const { token, expire, signature } = imagekit.getAuthenticationParameters();
+    res.send({
+      token,
+      expire,
+      signature,
+      publicKey: process.env.IK_PUBLIC_KEY,
+    });
+  } catch (error) {
+    console.error("ImageKit auth error:", error);
+    res.status(500).json({ message: "Failed to generate upload auth" });
+  }
 };
 
 // Get Posts By user
